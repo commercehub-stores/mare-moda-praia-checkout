@@ -1,11 +1,11 @@
-import { asset } from "@/lib/paths.ts";
+import { asset, STORE_URL } from "@/lib/paths.ts";
 
 /** Checkout top bar (Figma D5): logo back to the store, 3-step progress, "Ambiente 100% seguro". */
 export function CheckoutBar({ step }: { step: 1 | 2 | 3 }) {
   const steps = ["Sacola", "Pagamento", "Confirmação"];
   return (
     <header className="co-bar">
-      <a href="/" className="logo" aria-label="Voltar para a loja Maré">
+      <a href={STORE_URL} className="logo" aria-label="Voltar para a loja Maré">
         <span className="logo-word">maré</span>
         <span className="logo-tag">MODA PRAIA</span>
       </a>

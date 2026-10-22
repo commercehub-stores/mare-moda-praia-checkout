@@ -7,7 +7,7 @@ import { DEMO_PAYMENT_SYSTEM, getOrderForm, lookupCep, type OrderForm, paymentSy
 import { cents, deliveryLabel } from "@/lib/delivery.ts";
 import { formatMoney } from "@/lib/format.ts";
 import { splitLineName } from "@/lib/mare.ts";
-import { asset } from "@/lib/paths.ts";
+import { asset, STORE_URL } from "@/lib/paths.ts";
 
 export const metadata: Metadata = { title: "Checkout" };
 
@@ -36,7 +36,7 @@ export default async function CheckoutPage({ searchParams }: Props) {
         <main className="co-empty">
           <h1 className="display">Sua sacola está vazia</h1>
           <p className="muted">Escolha suas peças na loja e volte aqui para finalizar.</p>
-          <a href="/" className="btn btn-coral">
+          <a href={STORE_URL} className="btn btn-coral">
             Voltar para a loja
           </a>
         </main>

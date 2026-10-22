@@ -5,7 +5,7 @@ import { getOrderGroup } from "@/lib/checkout/vtex.ts";
 import { cents, deliveryLabel } from "@/lib/delivery.ts";
 import { formatMoney } from "@/lib/format.ts";
 import { splitLineName } from "@/lib/mare.ts";
-import { asset, ORDER_AUTH_COOKIE } from "@/lib/paths.ts";
+import { asset, ORDER_AUTH_COOKIE, STORE_URL } from "@/lib/paths.ts";
 
 export const metadata: Metadata = { title: "Pedido confirmado" };
 
@@ -29,7 +29,7 @@ export default async function OrderPage({ params }: Props) {
         <main className="co-empty">
           <h1 className="display">Pedido {group} recebido</h1>
           <p className="muted">Os detalhes ficam visíveis só no navegador que fez a compra. Você recebe tudo por e-mail.</p>
-          <a href="/" className="btn btn-coral">
+          <a href={STORE_URL} className="btn btn-coral">
             Voltar para a loja
           </a>
         </main>
@@ -79,7 +79,7 @@ export default async function OrderPage({ params }: Props) {
               {isBoleto ? "Abrir boleto" : "Ver código Pix"}
             </a>
           )}
-          <a href="/" className="btn btn-outline-light">
+          <a href={STORE_URL} className="btn btn-outline-light">
             Continuar comprando
           </a>
         </div>
@@ -129,7 +129,7 @@ export default async function OrderPage({ params }: Props) {
           <div className="ok-card ok-ugc">
             <h2 className="display">#VerãoMaré</h2>
             <p className="muted">Poste seu look marcando @mare.modapraia e apareça na nossa vitrine.</p>
-            <a href="/" className="btn btn-outline">
+            <a href={STORE_URL} className="btn btn-outline">
               Ver a coleção
             </a>
           </div>
