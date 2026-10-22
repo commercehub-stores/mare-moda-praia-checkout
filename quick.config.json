@@ -1,0 +1,69 @@
+{
+  "storeId": "01a16169-6c24-75b8-8c1d-3845e4dd2ddc",
+  "storeName": "Maré Moda Praia",
+  "platform": "VTEX",
+  "account": "quickdigitalpartnerbr",
+  "salesChannel": 1,
+  "checkoutHost": null,
+  "layerType": "CHECKOUT",
+  "templateKey": "checkout-vtex",
+  "templateVersion": "0.1.0",
+  "capabilities": {
+    "WEB": {
+      "allowedOrigins": [
+        "NATIVE",
+        "QUICK"
+      ],
+      "verified": true,
+      "note": null
+    },
+    "CHECKOUT": {
+      "allowedOrigins": [
+        "NATIVE",
+        "QUICK_REDIRECT",
+        "QUICK"
+      ],
+      "verified": true,
+      "note": "Checkout API completa. O pagamento precisa ser enviado até 5 min após criar o pedido."
+    },
+    "APP": {
+      "allowedOrigins": [
+        "QUICK"
+      ],
+      "verified": true,
+      "note": null
+    },
+    "SEO": {
+      "allowedOrigins": [
+        "NATIVE",
+        "QUICK"
+      ],
+      "verified": true,
+      "note": null
+    },
+    "SEARCH": {
+      "allowedOrigins": [
+        "NATIVE",
+        "QUICK"
+      ],
+      "verified": true,
+      "note": null
+    },
+    "CONTENT": {
+      "allowedOrigins": [
+        "NATIVE",
+        "QUICK"
+      ],
+      "verified": true,
+      "note": null
+    },
+    "EMAIL": {
+      "allowedOrigins": [
+        "NATIVE",
+        "QUICK"
+      ],
+      "verified": true,
+      "note": null
+    }
+  }
+}

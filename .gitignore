@@ -1,0 +1,9 @@
+node_modules/
+.next/
+.yarn/*
+!.yarn/releases
+next-env.d.ts
+*.tsbuildinfo
+.env
+.env.*
+!.env.example

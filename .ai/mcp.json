@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "quick-mare-moda-praia": {
+      "command": "yarn",
+      "args": ["mcp"],
+      "env": {}
+    }
+  }
+}
