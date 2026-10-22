@@ -3,7 +3,7 @@ import Link from "next/link";
 import { chooseSla, findCep, pay, saveAddress, saveContact } from "@/app/actions.ts";
 import { CheckoutBar } from "@/components/chrome.tsx";
 import { currentCartId } from "@/lib/cart.ts";
-import { getOrderForm, lookupCep, type OrderForm, setPayment } from "@/lib/checkout/vtex.ts";
+import { DEMO_PAYMENT_SYSTEM, getOrderForm, lookupCep, type OrderForm, paymentSystemFor, setPayment } from "@/lib/checkout/vtex.ts";
 import { cents, deliveryLabel } from "@/lib/delivery.ts";
 import { formatMoney } from "@/lib/format.ts";
 import { splitLineName } from "@/lib/mare.ts";
@@ -54,8 +54,9 @@ export default async function CheckoutPage({ searchParams }: Props) {
   const ready = hasContact && hasAddress && Boolean(selectedSla);
 
   // The chosen method goes to VTEX so payment promotions (5% no Pix) show up in the totals.
-  if (ready && method !== "cartao" && form.paymentData.paymentSystems.some((p) => String(p.id) === METHODS[method].id)) {
-    form = await setPayment(form, METHODS[method].id).catch(() => form) ?? form;
+  const paymentId = paymentSystemFor(METHODS[method].id);
+  if (ready && method !== "cartao" && form.paymentData.paymentSystems.some((p) => String(p.id) === paymentId)) {
+    form = (await setPayment(form, paymentId).catch(() => form)) ?? form;
   }
 
   const editContact = q.editar === "contato" || !hasContact;
@@ -65,7 +66,7 @@ export default async function CheckoutPage({ searchParams }: Props) {
   const subtotal = totalizer(form, "Items") ?? 0;
   const shipping = totalizer(form, "Shipping");
   const discounts = totalizer(form, "Discounts") ?? 0;
-  const count = items.reduce((n, i) => n + i.quantity, 0);
+  const count = items.filter((i) => !i.availability || i.availability === "available").reduce((n, i) => n + i.quantity, 0);
 
   return (
     <>
@@ -276,6 +277,11 @@ export default async function CheckoutPage({ searchParams }: Props) {
                     </ol>
                   )}
                   {method === "boleto" && <p className="muted">O boleto vence em 3 dias úteis. Separamos seu pedido assim que o pagamento for compensado (até 2 dias úteis).</p>}
+                  {DEMO_PAYMENT_SYSTEM && method !== "cartao" && (
+                    <p className="co-demo">
+                      <b>Modo demonstração:</b> o pedido é criado de verdade na VTEX com o pagamento pendente e nada é cobrado. Com o gateway de {METHODS[method].label} conectado, este passo gera a cobrança real.
+                    </p>
+                  )}
                   {method === "cartao" && (
                     <p className="muted">
                       Cartão em até 6x sem juros entra quando o adquirente for conectado à conta VTEX. Nesta demonstração, finalize com <Link href="/?pagamento=pix#pagamento">Pix</Link> ou <Link href="/?pagamento=boleto#pagamento">Boleto</Link>.
@@ -305,7 +311,7 @@ export default async function CheckoutPage({ searchParams }: Props) {
                     <span>
                       {size ? `Tam. ${size}` : ""} · {item.quantity} un.
                     </span>
-                    <b>{formatMoney(cents(item.sellingPrice * item.quantity))}</b>
+                    {item.availability && item.availability !== "available" ? <b className="sun">Esgotado · sai do pedido</b> : <b>{formatMoney(cents(item.sellingPrice * item.quantity))}</b>}
                   </span>
                 </div>
               );

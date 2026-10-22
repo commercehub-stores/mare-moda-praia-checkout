@@ -10,6 +10,15 @@ const BASE = `https://${ACCOUNT}.vtexcommercestable.com.br`;
 const PAYMENTS = `https://${ACCOUNT}.vtexpayments.com.br`;
 const SC = quickConfig.salesChannel;
 
+/**
+ * Demo mode: the test account is flagged "in production", where VTEX's test connector refuses to authorize.
+ * While no real Pix/Boleto gateway is connected, orders are recorded with Promissória (17): the order exists
+ * in VTEX with the payment pending and nothing is charged. Set CHECKOUT_DEMO_PAYMENT_SYSTEM="" to use the
+ * method the shopper picked (once a gateway is configured).
+ */
+export const DEMO_PAYMENT_SYSTEM: string | null = (process.env.CHECKOUT_DEMO_PAYMENT_SYSTEM ?? "17") || null;
+export const paymentSystemFor = (picked: string) => DEMO_PAYMENT_SYSTEM ?? picked;
+
 export class CheckoutError extends Error {
   constructor(
     message: string,
@@ -70,7 +79,7 @@ export interface VtexAddress {
 export interface OrderForm {
   orderFormId: string;
   value: number;
-  items: { uniqueId: string; id: string; name: string; skuName?: string; quantity: number; sellingPrice: number; price: number; listPrice: number; imageUrl: string | null; detailUrl?: string }[];
+  items: { uniqueId: string; id: string; name: string; skuName?: string; quantity: number; sellingPrice: number; price: number; listPrice: number; imageUrl: string | null; detailUrl?: string; availability?: string }[];
   totalizers: { id: string; name: string; value: number }[];
   clientProfileData: { email: string | null; firstName: string | null; lastName: string | null; document: string | null; phone: string | null } | null;
   shippingData: { selectedAddresses: VtexAddress[]; logisticsInfo: { itemIndex: number; selectedSla: string | null; slas: VtexSla[] }[] } | null;
@@ -130,7 +139,8 @@ export async function selectSla(form: OrderForm, slaId: string): Promise<OrderFo
     await request("POST", `${BASE}/api/checkout/pub/orderForm/${form.orderFormId}/attachments/shippingData`, {
       clearAddressIfPostalCodeNotFound: false,
       selectedAddresses: shipping.selectedAddresses,
-      logisticsInfo: shipping.logisticsInfo.map((l) => ({ itemIndex: l.itemIndex, selectedSla: slaId, selectedDeliveryChannel: "delivery" })),
+      // Items without stock carry no SLA; only the deliverable ones get the chosen option.
+      logisticsInfo: shipping.logisticsInfo.map((l) => ({ itemIndex: l.itemIndex, selectedSla: l.slas.some((s) => s.id === slaId) ? slaId : null, selectedDeliveryChannel: "delivery" })),
     })
   ).data as OrderForm;
 }
@@ -165,6 +175,15 @@ function pickCookies(setCookies: string[]): string {
 export async function placeOrder(orderFormId: string, paymentSystem: string): Promise<PlacedOrder> {
   let form = await getOrderForm(orderFormId);
   if (!form) throw new CheckoutError("Sacola expirada", 404);
+  // Sizes that ran out since they went into the bag would block the order: drop them first.
+  const gone = form.items.map((item, index) => ({ item, index })).filter(({ item }) => item.availability && item.availability !== "available");
+  if (gone.length) {
+    form = (
+      await request("POST", `${BASE}/api/checkout/pub/orderForm/${orderFormId}/items/update`, { orderItems: gone.map(({ index }) => ({ index, quantity: 0 })) })
+    ).data as OrderForm;
+    if (form.items.length === 0) throw new CheckoutError("As peças da sacola esgotaram", 409);
+  }
+  paymentSystem = paymentSystemFor(paymentSystem);
   form = await setPayment(form, paymentSystem);
   const value = form.value;
 

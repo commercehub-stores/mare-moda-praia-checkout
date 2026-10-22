@@ -103,6 +103,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .co-tag { background: var(--line); color: var(--muted); }
 .co-pay-panel { background: var(--white); border-radius: 16px; padding: 24px; }
 .co-pay-panel p { margin: 0; font-size: 14px; line-height: 1.55; }
+.co-demo { margin-top: 16px !important; background: color-mix(in srgb, var(--sun) 18%, white); border-radius: 12px; padding: 12px 14px; font-size: 13px !important; color: var(--ink); }
 .co-howto { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; font-size: 14px; }
 .co-howto li { display: flex; align-items: center; gap: 10px; }
 .co-howto span { width: 22px; height: 22px; border-radius: 999px; background: var(--sand); display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex: none; }

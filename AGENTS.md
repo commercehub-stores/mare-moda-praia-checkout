@@ -73,5 +73,9 @@ yarn typecheck && yarn lint && yarn test && yarn build   # o mesmo que a CI exig
 - O carrinho é o mesmo `qs_cart` da camada Web. A loja entrega o carrinho em `/checkout/sacola/{orderFormId}`.
 - Pix e Boleto rodam inteiros no servidor (não há dado de cartão). Cartão fica para quando houver adquirente: dado de cartão
   nunca passa por este servidor; ele vai do navegador direto para o gateway.
-- Conta de teste `quickdigitalpartnerbr`: afiliação "TestPay (demo Maré)" (conector de teste da VTEX, sem dinheiro real) com Pix, Boleto, Visa e Mastercard.
+- Conta de teste `quickdigitalpartnerbr`: afiliação "TestPay (demo Maré)" (conector de teste da VTEX) com Pix, Boleto, Visa e Mastercard.
+  A conta está marcada como "em produção", e nesse modo o TestPay nega a autorização. Por isso existe o **modo demonstração**
+  (`CHECKOUT_DEMO_PAYMENT_SYSTEM`, padrão `17` = Promissória): o pedido é criado na VTEX com pagamento pendente, sem cobrança, e a tela avisa.
+  Com um gateway real de Pix/Boleto configurado, defina `CHECKOUT_DEMO_PAYMENT_SYSTEM=""` na Vercel.
+- Promoções na conta: 5% no Pix (e na Promissória do modo demo) e frete grátis acima de R$ 299.
 - Links para a loja usam `<a href="/">` (fora do basePath). Arquivos de `public/` precisam de `asset()` (`lib/paths.ts`).
