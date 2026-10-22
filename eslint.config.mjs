@@ -14,6 +14,10 @@ export default tseslint.config(
     rules: {
       "@typescript-eslint/consistent-type-imports": ["error", { fixStyle: "inline-type-imports" }],
       "no-console": ["error", { allow: ["warn", "error"] }],
+      // Product photos come from the VTEX image CDN and icons are tiny SVGs; next.config has images.unoptimized.
+      "@next/next/no-img-element": "off",
+      // Links back to the storefront zone ("/") must be plain <a>: next/link would add this zone's basePath.
+      "@next/next/no-html-link-for-pages": "off",
     },
   },
 );

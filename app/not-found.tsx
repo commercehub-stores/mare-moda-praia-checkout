@@ -1,12 +1,10 @@
-import Link from "next/link";
-
 export default function NotFound() {
   return (
-    <div className="stack">
-      <h1>Página não encontrada</h1>
-      <p className="muted">
-        <Link href="/">Voltar para a home</Link>
-      </p>
-    </div>
+    <main className="co-empty">
+      <h1 className="display">Página não encontrada</h1>
+      <a href="/checkout" className="btn btn-ink">
+        Voltar para o checkout
+      </a>
+    </main>
   );
 }

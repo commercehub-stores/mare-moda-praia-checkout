@@ -7,7 +7,7 @@ qualquer coisa.
 ## Stack
 
 - Next.js 16 (App Router, Server Components, Server Actions), React 19, TypeScript estrito.
-- **Beta:** telas de esqueleto. Hoje o fluxo é carrinho Quick → redirect para o checkout nativo da VTEX.
+- **Versão Quick (headless):** checkout em uma página (contato → entrega → pagamento) e confirmação, layout do Figma "Maré" (D5/D6). Servido pela loja em `/checkout` (multi-zones; `basePath` em `next.config.ts`).
 - CSS puro com os tokens de `design/tokens.json` (mesmos valores em `app/globals.css`).
 - Yarn 4 (`nodeLinker: node-modules`), Node 24. Testes com Vitest; lint com ESLint.
 
@@ -65,3 +65,13 @@ yarn typecheck && yarn lint && yarn test && yarn build   # o mesmo que a CI exig
 - `.ai/mcp.json`: servidor MCP **somente leitura** (`yarn mcp`) com catálogo de teste, tokens de design e
   as versões desta loja no painel. Não tem acesso a credenciais da VTEX.
 - A IA trabalha em branch; a CI bloqueia o merge sem typecheck, lint, testes e build; um dev aprova o PR.
+
+## Checkout headless (Versão Quick)
+
+- `lib/checkout/vtex.ts` é a extensão desta camada: orderForm → `clientProfileData` → `shippingData` (endereço + SLA) → `paymentData`
+  → `transaction` → pagamento em `vtexpayments` (dentro dos 5 min) → `gatewayCallback` → `order-group`. Só rotas públicas, sem App Key.
+- O carrinho é o mesmo `qs_cart` da camada Web. A loja entrega o carrinho em `/checkout/sacola/{orderFormId}`.
+- Pix e Boleto rodam inteiros no servidor (não há dado de cartão). Cartão fica para quando houver adquirente: dado de cartão
+  nunca passa por este servidor; ele vai do navegador direto para o gateway.
+- Conta de teste `quickdigitalpartnerbr`: afiliação "TestPay (demo Maré)" (conector de teste da VTEX, sem dinheiro real) com Pix, Boleto, Visa e Mastercard.
+- Links para a loja usam `<a href="/">` (fora do basePath). Arquivos de `public/` precisam de `asset()` (`lib/paths.ts`).
