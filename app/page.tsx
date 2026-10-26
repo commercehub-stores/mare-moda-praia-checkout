@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { chooseSla, findCep, pay, saveAddress, saveContact } from "@/app/actions.ts";
 import { CheckoutBar } from "@/components/chrome.tsx";
+import { Turnstile } from "@/components/turnstile.tsx";
 import { currentCartId } from "@/lib/cart.ts";
 import { DEMO_PAYMENT_SYSTEM, getOrderForm, lookupCep, type OrderForm, paymentSystemFor, setPayment } from "@/lib/checkout/vtex.ts";
 import { cents, deliveryLabel } from "@/lib/delivery.ts";
@@ -344,6 +345,7 @@ export default async function CheckoutPage({ searchParams }: Props) {
           {method !== "cartao" && (
             <form action={pay}>
               <input type="hidden" name="paymentSystem" value={METHODS[method].id} />
+              <Turnstile />
               <button className="btn btn-coral btn-block co-pay" disabled={!ready}>
                 <img src={asset("/icons/co-lock-white.svg")} alt="" width={18} height={18} />
                 {ready ? `Pagar ${formatMoney(cents(form.value))} com ${METHODS[method].label}` : "Preencha os dados para pagar"}

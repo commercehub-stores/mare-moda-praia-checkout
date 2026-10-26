@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { CART_COOKIE, currentCartId } from "@/lib/cart.ts";
 import { CheckoutError, getOrderForm, placeOrder, selectSla, setAddress, setProfile } from "@/lib/checkout/vtex.ts";
 import { ORDER_AUTH_COOKIE } from "@/lib/paths.ts";
+import { isCpf, LIMITS, type Limit, overLimit, verifyHuman } from "@/lib/security.ts";
 
 const text = (form: FormData, key: string) => {
   const value = form.get(key);
@@ -18,6 +19,12 @@ function fail(message: string, anchor = ""): never {
   redirect(`/?erro=${encodeURIComponent(message)}${anchor}`);
 }
 
+const TOO_MANY = "Muitas tentativas em pouco tempo. Aguarde alguns minutos e tente de novo.";
+
+async function guard(limit: Limit, anchor: string) {
+  if (await overLimit(limit)) fail(TOO_MANY, anchor);
+}
+
 async function requireCart(): Promise<string> {
   const id = await currentCartId();
   if (!id) redirect("/");
@@ -25,6 +32,7 @@ async function requireCart(): Promise<string> {
 }
 
 export async function saveContact(form: FormData) {
+  await guard(LIMITS.contact, "#contato");
   const id = await requireCart();
   const name = text(form, "nome").split(/\s+/);
   const firstName = name.shift() ?? "";
@@ -34,7 +42,7 @@ export async function saveContact(form: FormData) {
   const phone = digits(text(form, "telefone"));
   if (!email.includes("@")) fail("Informe um e-mail válido.", "#contato");
   if (!firstName || !lastName) fail("Informe nome e sobrenome.", "#contato");
-  if (document.length !== 11) fail("O CPF precisa ter 11 dígitos.", "#contato");
+  if (!isCpf(document)) fail("Confira o CPF: os dígitos não batem.", "#contato");
   if (phone.length < 10) fail("Informe o celular com DDD.", "#contato");
   try {
     await setProfile(id, { email, firstName, lastName, document, phone: `+55${phone}` });
@@ -47,12 +55,14 @@ export async function saveContact(form: FormData) {
 
 /** "Buscar" next to the CEP: fills street, neighbourhood, city and state from VTEX's postal-code service. */
 export async function findCep(form: FormData) {
+  await guard(LIMITS.cep, "#entrega");
   const cep = digits(text(form, "cep"));
   if (cep.length !== 8) fail("O CEP precisa ter 8 dígitos.", "#entrega");
   redirect(`/?cep=${cep}#entrega`);
 }
 
 export async function saveAddress(form: FormData) {
+  await guard(LIMITS.address, "#entrega");
   const id = await requireCart();
   const cep = digits(text(form, "cep"));
   const address = {
@@ -80,6 +90,7 @@ export async function saveAddress(form: FormData) {
 }
 
 export async function chooseSla(form: FormData) {
+  await guard(LIMITS.sla, "#entrega");
   const id = await requireCart();
   const orderForm = await getOrderForm(id);
   if (!orderForm) redirect("/");
@@ -90,8 +101,15 @@ export async function chooseSla(form: FormData) {
 
 /** Places the order with Pix or Boleto and opens the confirmation. */
 export async function pay(form: FormData) {
+  // A placed order reserves stock in VTEX: scripts must not be able to create orders in bulk.
+  await guard(LIMITS.pay, "#pagamento");
+  if (!(await verifyHuman(text(form, "cf-turnstile-response")))) fail("Confirme que você não é um robô e tente de novo.", "#pagamento");
   const id = await requireCart();
   const paymentSystem = text(form, "paymentSystem");
+  const orderForm = await getOrderForm(id);
+  if (!orderForm) redirect("/");
+  // Only a method this cart actually offers (the form value is client-controlled).
+  if (!orderForm.paymentData.paymentSystems.some((p) => String(p.id) === paymentSystem)) fail("Escolha uma forma de pagamento.", "#pagamento");
   let group = "";
   try {
     const placed = await placeOrder(id, paymentSystem);

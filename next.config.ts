@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { SECURITY_HEADERS } from "./security-headers.ts";
 
 /**
  * The checkout layer is its own deploy, served by the storefront under /checkout (Next.js multi-zones:
@@ -12,6 +13,9 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   images: { unoptimized: true },
   env: { NEXT_PUBLIC_STORE_URL: STORE_URL },
+  async headers() {
+    return [{ source: "/:path*", headers: SECURITY_HEADERS }];
+  },
   // Server Actions are posted to the store's domain and proxied here: accept that origin.
   experimental: { serverActions: { allowedOrigins: [new URL(STORE_URL).host] } },
 };

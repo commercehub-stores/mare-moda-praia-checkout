@@ -79,3 +79,17 @@ yarn typecheck && yarn lint && yarn test && yarn build   # o mesmo que a CI exig
   Com um gateway real de Pix/Boleto configurado, defina `CHECKOUT_DEMO_PAYMENT_SYSTEM=""` na Vercel.
 - Promoções na conta: 5% no Pix (e na Promissória do modo demo) e frete grátis acima de R$ 299.
 - Links para a loja usam `<a href="/">` (fora do basePath). Arquivos de `public/` precisam de `asset()` (`lib/paths.ts`).
+
+## Segurança (camada de requisições)
+- `lib/security.ts` e `security-headers.ts` são **idênticos** em Web e Checkout: mude nos dois.
+- Cabeçalhos em todas as rotas: CSP (sem iframe da loja em outro site, sem plugins, formulários só para o próprio domínio), `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`. A CSP mantém `'unsafe-inline'` em scripts porque nonce deixaria toda página dinâmica (sem cache de CDN). Imagem externa só da VTEX (`*.vteximg.com.br`, `*.vtexassets.com`).
+- Limite por IP (`overLimit(LIMITS.x)`) em sacola, frete, newsletter e em todas as etapas do checkout. O pedido aceita 5 por hora por IP. Com `REDIS_URL` o contador é compartilhado entre instâncias; sem ele fica em memória (exato num servidor só, aproximado em serverless).
+- Cloudflare Turnstile no "Pagar": ativo quando `NEXT_PUBLIC_TURNSTILE_SITE_KEY` e `TURNSTILE_SECRET_KEY` estão definidas (Cloudflare › Turnstile › Add widget com o domínio da loja). Sem elas o widget some e só o limite por IP vale.
+- A sacola nunca vai na URL: Web e Checkout dividem o domínio e o cookie `qs_cart` (httpOnly). `/checkout/sacola/{id}` só redireciona para `/checkout`.
+- Validações no servidor: CPF com dígitos verificadores, forma de pagamento só entre as que o orderForm oferece, pedido só com número, redirecionamentos internos via `safePath`.
+
+| Variável | Onde | Obrigatória |
+|---|---|---|
+| `REDIS_URL` | servidor de produção | recomendada (limite compartilhado) |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Web e Checkout | em produção |
+| `TURNSTILE_SECRET_KEY` | Checkout | em produção |

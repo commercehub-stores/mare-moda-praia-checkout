@@ -197,3 +197,4 @@ body:has(.ok-hero) { background: var(--shell); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+.co-turnstile { margin-bottom: 12px; }

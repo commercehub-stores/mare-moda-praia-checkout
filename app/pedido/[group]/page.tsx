@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import { notFound } from "next/navigation";
 import { CheckoutBar } from "@/components/chrome.tsx";
 import { getOrderGroup } from "@/lib/checkout/vtex.ts";
 import { cents, deliveryLabel } from "@/lib/delivery.ts";
@@ -18,8 +19,10 @@ const time = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digi
 /** Order confirmation (Figma "Pedido confirmado"): hero with status, delivery tracker, the items. */
 export default async function OrderPage({ params }: Props) {
   const { group } = await params;
+  // Order groups are numeric; anything else would only echo attacker text on a trusted page.
+  if (!/^\d{6,20}$/.test(group)) notFound();
   const auth = (await cookies()).get(ORDER_AUTH_COOKIE)?.value ?? "";
-  const orders = /^\d+$/.test(group) ? await getOrderGroup(group, auth) : null;
+  const orders = await getOrderGroup(group, auth);
   const order = orders?.[0];
 
   if (!order) {
