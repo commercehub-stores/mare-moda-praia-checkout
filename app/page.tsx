@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { chooseSla, findCep, pay, saveAddress, saveContact } from "@/app/actions.ts";
 import { CheckoutBar } from "@/components/chrome.tsx";
 import { Turnstile } from "@/components/turnstile.tsx";
@@ -99,10 +98,10 @@ export default async function CheckoutPage({ searchParams }: Props) {
                 </h2>
               </div>
               {hasContact && !editContact && (
-                <Link href="/?editar=contato#contato" className="co-edit">
+                <a href="/checkout?editar=contato#contato" className="co-edit">
                   <img src={asset("/icons/co-pencil.svg")} alt="" width={14} height={14} />
                   Alterar
-                </Link>
+                </a>
               )}
             </div>
             {editContact ? (
@@ -150,10 +149,10 @@ export default async function CheckoutPage({ searchParams }: Props) {
                 )}
               </div>
               {hasAddress && !editAddress && (
-                <Link href="/?editar=entrega#entrega" className="co-edit">
+                <a href="/checkout?editar=entrega#entrega" className="co-edit">
                   <img src={asset("/icons/co-pencil.svg")} alt="" width={14} height={14} />
                   Alterar
-                </Link>
+                </a>
               )}
             </div>
 
@@ -255,11 +254,11 @@ export default async function CheckoutPage({ searchParams }: Props) {
                   {(Object.keys(METHODS) as MethodKey[]).map((key) => {
                     const m = METHODS[key];
                     return (
-                      <Link key={key} href={`/?pagamento=${key}#pagamento`} aria-current={key === method ? "true" : undefined} scroll={false}>
+                      <a key={key} href={`/checkout?pagamento=${key}#pagamento`} aria-current={key === method ? "true" : undefined}>
                         <img src={asset(`/icons/${m.icon}`)} alt="" width={16} height={16} />
                         {m.label}
                         {m.tag && <span className={key === "pix" ? "co-tag-sea" : "co-tag"}>{m.tag}</span>}
-                      </Link>
+                      </a>
                     );
                   })}
                 </nav>
@@ -285,7 +284,7 @@ export default async function CheckoutPage({ searchParams }: Props) {
                   )}
                   {method === "cartao" && (
                     <p className="muted">
-                      Cartão em até 6x sem juros entra quando o adquirente for conectado à conta VTEX. Nesta demonstração, finalize com <Link href="/?pagamento=pix#pagamento">Pix</Link> ou <Link href="/?pagamento=boleto#pagamento">Boleto</Link>.
+                      Cartão em até 6x sem juros entra quando o adquirente for conectado à conta VTEX. Nesta demonstração, finalize com <a href="/checkout?pagamento=pix#pagamento">Pix</a> ou <a href="/checkout?pagamento=boleto#pagamento">Boleto</a>.
                     </p>
                   )}
                 </div>
